@@ -1,11 +1,12 @@
 -record(pinger, {
+	id :: term(),
 	url :: string(),
 	headers :: httpc:headers(),
 	post :: [{ string() , binary() }],
 	cookie :: [{string(), string()}],
-	timeout :: integer() | infinity,
-	connect_timeout :: integer() | infinity,
-	period :: integer() | infinity
+	timeout :: timeout(),
+	connect_timeout :: timeout(),
+	period :: timeout()
 }).
 
 -record(stats, {
