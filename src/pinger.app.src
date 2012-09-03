@@ -1,0 +1,13 @@
+%% Copyright
+{application, pinger, [
+    {description, ""},
+    {vsn, "1"},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        inets
+    ]},
+    {mod, { pinger, [http_pinger, http_pinger_sup, tcp_server, tcp_server_sup]}},
+    {env, []}
+]}.

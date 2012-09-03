@@ -1,6 +1,6 @@
 -module(http_pinger).
 
--export([start_link/1, stop/1, stat/1, simple_start_link/3, reset/1, id/1]).
+-export([start_link/1, stop/1, stat/1, simple_start_link/3, id/1]).
 
 -include("include/http_pinger.hrl").
 
@@ -42,11 +42,6 @@ stat(Pid) ->
 	gen_server:call(Pid, stat)
 .
 
--spec reset(Pid :: pid()) -> ok.
-reset(Pid) ->
-	gen_server:cast(Pid, reset)
-.
-
 handle_info( ping, { State, Ref, Stats}) ->
 	cancel_httpc_request(Ref),
 	{ok, RequestId} = httpc:request(get, { State#pinger.url, []}, [{timeout, State#pinger.timeout }, {autoredirect, false}], [{sync, false}, {body_format, binary}]),
@@ -85,7 +80,7 @@ handle_info( _ , State ) ->
 .
 
 handle_call(stat, _From, { State, Ref, Stats }) -> % отправить статистику запрашиваемому потоку
-			{ reply, Stats, { State, Ref, Stats }}
+			{ reply, json_prepare_stats(Stats), { State, Ref, Stats }}
 .
 
 handle_cast(stop, State) -> % останавливаем поток
@@ -153,4 +148,17 @@ time_min( 0, Y) -> Y;
 
 time_min( X, Y ) ->
 	min(X,Y)
+.
+
+-spec json_prepare_stats(Stats :: stats ) -> { _JSON_PREPARE }.
+json_prepare_stats(Stats) ->
+	{
+		{ status_counter, dict:to_list(Stats#stats.status_counter)},
+		{ response_time_min, Stats#stats.response_time_min },
+		{ response_time_max, Stats#stats.response_time_max },
+		{ response_time_sum, Stats#stats.response_time_sum },
+		{ timeout, Stats#stats.timeout},
+		{ connect_timeout, Stats#stats.connect_timeout },
+		{ count_request , Stats#stats.count_request }
+	}
 .
