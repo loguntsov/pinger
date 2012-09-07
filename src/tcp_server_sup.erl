@@ -16,6 +16,8 @@ start_link(Num, Supervisor_dict) ->
 	supervisor:start_link(?MODULE, {Num, Supervisor_dict}).
 
 init({Num, Sups_dict}) ->
+		error_logger:info_report("Start tcp-server"),
+		error_logger:info_report({ pids, Sups_dict}),
     {ok, ListenSock} = gen_tcp:listen(?PORT,[binary, {active, false},{packet,line}]),
 		{ok,{{ one_for_one, ?RESTART_COUNT, ?SECONDS },
 				lists:map(

@@ -1,6 +1,5 @@
 %% Copyright
 -module(pinger_app).
--author("begemot").
 
 -behaviour(application).
 
@@ -9,9 +8,13 @@
 
 % application callbacks
 start(_Type, _Args) ->
-	ok.
+	{ok, Options} = file:consult("ping.conf"),
+	Pid = spawn_link(pinger_app_sup, start_link, Options),
+	{ok, Pid}
+.
 
-start() -> ok.
+start() -> start(normal, []).
 
-stop(_State) ->
-	ok.
+stop(State) -> State.
+
+

@@ -24,27 +24,46 @@ socket_accept(Pid, LSock) ->
 			socket_accept(Pid, LSock)
 	end
 .
+% Прием сообщений и преобразование их в сообщения для gen_server
 socket_loop(Pid, Socket) ->
 	inet:setopts(Socket,[{active,once}]),
 	receive
-		{tcp,Socket,<<"get ", Section/binary>> } ->
-			gen_tcp:send(Socket, gen_server:call(Pid, {get, Section})),
+		{tcp,Socket,<<"get ", Section/binary >> } ->
+			send_server_answer(Socket, Pid, {get, trim(Section)}),
 			socket_loop(Pid, Socket);
 		{ tcp, Socket, <<"\r\n">> } ->
 			socket_loop(Pid, Socket);
-		{tcp, Socket, Any } ->
-			io:format("~p", [Any]),
+		{tcp, Socket, _Any } ->
 			ok = gen_tcp:send(Socket, <<"Command not recognise\r\n">>),
 			socket_loop(Pid, Socket);
 		{tcp_closed, Socket } -> ok
 	end
 .
 
+send_server_answer(Socket, Pid, Msg) ->
+			Ans = gen_server:call(Pid, Msg),
+			gen_tcp:send(Socket, <<Ans, "\r\n">>)
+.
+
+%split(Binary) ->
+%	trim(binary:split(Binary,<<" ">>)).
+%
+%trim([], Acc ) -> Acc;
+%
+%trim([X | List], Acc ) ->
+% trim(List, [trim(X) | Acc]).
+
+trim(Binary) ->
+	binary:replace( binary:replace( binary:replace(
+		Binary,<<"\r">>,<<"">>),<<"\n">>,<<"">>),<<" ">>,<<"">>)
+.
+
+
 handle_call({get, Section}, _From, State) ->
 	try dict:fetch(Section, State#server_state.sups) of
 		X -> { reply, jsx:encode(X), State }
 	catch
-		error:badarg -> {reply, <<"Section not found\r\n">>, State }
+		error:badarg -> {reply, <<"Section not found">>, State }
 	end
 .
 

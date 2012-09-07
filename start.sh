@@ -1,4 +1,4 @@
 #!/bin/sh
-erl -sname vktema_redirect -pa ebin -pa deps/*/ebin -s vktema_redirect \
+erl -sname pinger_app -pa ebin -pa deps/*/ebin -s pinger_app \
 	-eval "io:format(\"~nVKTema redirect by UID~n\")."
 

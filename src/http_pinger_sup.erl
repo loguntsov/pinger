@@ -23,6 +23,7 @@ init(Urls_list) -> { ok, {{ one_for_one, ?RESTART_COUNT, ?SECONDS },
 
 -spec start_link(Urls :: [{url, timeout(), timeout()}]) -> {ok, pid()}.
 start_link(Urls) ->
+	error_logger:info_report({ url, Urls}),
   Args = lists:map(fun(Item) ->
     A = #pinger{
       url = element(1,Item),
